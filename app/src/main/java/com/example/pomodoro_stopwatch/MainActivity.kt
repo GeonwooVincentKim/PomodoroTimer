@@ -12,13 +12,16 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.remainMinutesTextView)
     }
 
-    private val remainSecondsTextView: TextView by lazy{
+    private val remainSecondsTextView: TextView by lazy {
         findViewById<TextView>(R.id.remainSecondsTextView)
     }
 
     private val seekBar: SeekBar by lazy {
         findViewById<SeekBar>(R.id.seekBar)
     }
+
+    /* If CountDownTimer is null, which mean there is no executing CountDownTimer right now */
+    private var currentCountDownTimer: CountDownTimer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,21 +37,28 @@ class MainActivity : AppCompatActivity() {
     private fun bindViews() {
         seekBar.setOnSeekBarChangeListener(
             object : SeekBar.OnSeekBarChangeListener {
-                @SuppressLint("SetTextI18n")
+                /* Does not need to use Suppress-Lint because the value of this function's codes did not hardcoded */
                 override fun onProgressChanged(
                     seekBar: SeekBar?,
                     progress: Int,
                     fromUser: Boolean
                 ) {
-                    remainMinutesTextView.text = "%02d".format(progress)
+                    if (fromUser) {
+                        updateRemainTime(progress * 60 * 1000L)
+                    }
                 }
 
                 override fun onStartTrackingTouch(seekBar: SeekBar?) {
-
+                    currentCountDownTimer?.cancel()
+                    currentCountDownTimer = null
                 }
 
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {
-
+                    /* Mare sure not to work when sets seekBar is not working */
+                    seekBar ?: return   // Late - Return
+                    currentCountDownTimer =
+                        createCountDownTimer(seekBar.progress * 60 * 1000L).start() // Allocates value into currentCountDownTimer
+                    currentCountDownTimer?.start()
                 }
             }
         )
@@ -75,7 +85,7 @@ class MainActivity : AppCompatActivity() {
         remainSecondsTextView.text = "%02d".format(remainSeconds % 60)
     }
 
-    private fun updateSeekBar(remainMillis: Long){
+    private fun updateSeekBar(remainMillis: Long) {
         seekBar.progress = (remainMillis / 1000 / 60).toInt()
     }
 }
