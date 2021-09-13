@@ -51,7 +51,7 @@ class MainActivity : AppCompatActivity() {
         soundPool.autoPause() // Pause all of SoundPool
     }
 
-    override fun onDestroy(){
+    override fun onDestroy() {
         super.onDestroy()
         soundPool.release()
     }
@@ -71,14 +71,18 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                    currentCountDownTimer?.cancel()
-                    currentCountDownTimer = null
+                    stopCountDown()
                 }
 
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {
                     /* Mare sure not to work when sets seekBar is not working */
                     seekBar ?: return   // Late - Return
-                    startCountDown()
+
+                    if (seekBar.progress == 0) {
+                        stopCountDown()
+                    } else {
+                        startCountDown()
+                    }
                 }
             }
         )
@@ -101,7 +105,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-    private fun startCountDown(){
+    private fun startCountDown() {
         currentCountDownTimer =
             createCountDownTimer(seekBar.progress * 60 * 1000L).start() // Allocates value into currentCountDownTimer
         currentCountDownTimer?.start()
@@ -110,6 +114,12 @@ class MainActivity : AppCompatActivity() {
         tickingSoundId?.let { soundId ->
             soundPool.play(soundId, 1F, 1F, 0, -1, 1F)
         }
+    }
+
+    private fun stopCountDown() {
+        currentCountDownTimer?.cancel()
+        currentCountDownTimer = null
+        soundPool.autoPause()
     }
 
     private fun completeCountDown() {
